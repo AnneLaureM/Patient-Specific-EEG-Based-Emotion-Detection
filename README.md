@@ -55,8 +55,6 @@ Ce projet vise à **restaurer une capacité de communication** pour des personne
 ---
 
 ## 🏗️ Architecture du Projet
-
-```
 Patient-Specific-EEG-Based-Emotion-Detection/
 │
 ├── 📁 Scripts Principaux
@@ -130,7 +128,6 @@ Patient-Specific-EEG-Based-Emotion-Detection/
 │
 ├── requirements.txt                          # Dépendances Python
 └── README.md                                  # Cette documentation
-```
 
 ---
 

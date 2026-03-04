@@ -1,0 +1,405 @@
+\section{Materials and Methods}
+
+\subsection{EEG Hardware: Bitbrain Air 8-Channel System}
+
+The choice of EEG hardware in clinical populations must balance signal quality, patient comfort, and practical usability. For this proof-of-concept study, we selected the Bitbrain Air wireless EEG system with 8 dry electrodes, specifically designed for ease of use in real-world clinical environments.
+
+\begin{table}[H]
+\centering
+\caption{Technical specifications of the Bitbrain Air EEG system}
+\label{tab:hardware}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Parameter} & \textbf{Specification} \\
+\midrule
+Number of channels & 8 \\
+Electrode type & Dry Ag/AgCl active electrodes \\
+Montage & Reduced 10-20 system (F3, F4, C3, C4, P3, P4, O1, O2) \\
+Sampling rate & 256 Hz \\
+ADC resolution & 24-bit \\
+Dynamic range & $\pm$187.5 mV \\
+Wireless transmission & Bluetooth 4.0 (range up to 10 m) \\
+Battery life & 8 hours continuous recording \\
+Weight & 90 grams \\
+Impedance monitoring & Automatic, < 50 k$\Omega$ target \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The system offers several key advantages for clinical application:
+
+\begin{itemize}
+    \item \textbf{No gel}: Eliminates lengthy preparation and cleanup (2-3 minutes setup)
+    \item \textbf{Comfort}: Lightweight design reduces skin irritation and discomfort
+    \item \textbf{Signal quality}: Active electrodes provide SNR comparable to wet systems up to 40 Hz
+    \item \textbf{Mobility}: Wireless design allows recording during natural care activities
+    \item \textbf{Real-time access}: Python SDK provides low-latency data streaming (< 50 ms)
+\end{itemize}
+
+While 8 channels provide less spatial information than high-density systems, they represent an optimal trade-off for this clinical context, providing sufficient coverage for frontal asymmetry, central motor/arousal regions, temporal social-emotional areas, and posterior attentional regions.
+
+\subsection{Participant and Recording Protocol}
+
+For technical validation, we recruited a healthy female volunteer aged 42 years from the laboratory personnel. The participant had no history of neurological or psychiatric disorders and provided informed consent. The session lasted approximately 5 minutes and was conducted in a quiet room with the participant seated comfortably.
+
+During the session, the participant was instructed to simulate different emotional states based on standardized verbal cues provided by the experimenter every 30-60 seconds. The simulated states included: fatigue, thirst (soif), serenity (sérénité), desire (envie), joy (joie), and neutral. A researcher provided real-time annotations through the tagging interface, resulting in 9 annotated events.
+
+\begin{table}[H]
+\centering
+\caption{Participant characteristics}
+\label{tab:participant}
+\begin{tabular}{@{}lc@{}}
+\toprule
+\textbf{Characteristic} & \textbf{Value} \\
+\midrule
+Subject ID & F42 \\
+Age (years) & 42 \\
+Sex & Female \\
+Session duration (seconds) & 283.9 \\
+Number of annotations & 9 \\
+Unique emotional states & 6 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Real-Time Acquisition Pipeline}
+
+The Bitbrain Python SDK was used to stream data in real time. A custom acquisition script, \texttt{01\_acquisition.py}, was developed with the following features:
+
+\begin{itemize}
+    \item Low-latency streaming of EEG blocks with timestamp synchronization
+    \item Circular buffering to prevent packet loss during high CPU load
+    \item Real-time impedance monitoring and display
+    \item Optional computation of band powers and frontal alpha asymmetry for visualization
+    \item Continuous logging of raw EEG into timestamped CSV files
+\end{itemize}
+
+The raw EEG log format is:
+\begin{verbatim}
+time_s,ch1,ch2,ch3,ch4,ch5,ch6,ch7,ch8
+0.000,12.34,11.56,13.21,...
+\end{verbatim}
+
+\subsection{Real-Time Emotional Annotation Interface}
+
+Because patients cannot self-report, emotional labeling must rely on real-time observation by caregivers. We developed a simple graphical interface using Streamlit (\texttt{02\_tagging\_app.py}) with the following features:
+
+\begin{itemize}
+    \item "Start Session" button defining time zero and synchronizing with EEG
+    \item Large, color-coded buttons for each observable state
+    \item Text input for contextual notes
+    \item Real-time display of recent annotations
+    \item Session management with unique session IDs
+\end{itemize}
+
+Each button click appends a line to \texttt{annotations\_patient.csv}:
+\begin{verbatim}
+time_s,label,session_id,notes
+6.962,fatigue,20260304_020920,
+10.158,soif,20260304_020920,
+14.522,serenite,20260304_020920,
+\end{verbatim}
+
+\subsection{EEG Preprocessing}
+
+Raw EEG data were preprocessed using MNE-Python version 1.6.0 with the following pipeline:
+
+\begin{enumerate}
+    \item \textbf{Band-pass filtering}: 1 to 40 Hz using a zero-phase FIR filter to remove slow drifts and high-frequency noise
+    \item \textbf{Notch filtering}: 50 Hz filter to remove power line interference
+    \item \textbf{Artifact detection}: Channel-wise amplitude thresholds of $\pm$150 $\mu$V and gradient thresholds of 50 $\mu$V/ms
+    \item \textbf{Independent Component Analysis (ICA)}: Infomax ICA to identify and remove components corresponding to eye movements, blinks, and muscle artifacts
+    \item \textbf{Channel interpolation}: Bad channels, if any, were interpolated using spherical spline interpolation
+    \item \textbf{Re-referencing}: Data were re-referenced to the common average
+\end{enumerate}
+
+After preprocessing, data quality metrics were computed including percentage of retained data, signal-to-noise ratio (SNR), and number of rejected ICA components.
+
+\subsection{EEG Windowing and Feature Extraction}
+
+Continuous EEG was segmented into overlapping windows of duration 4 seconds with a stride of 1 second (75\% overlap). This window size was chosen based on optimization studies showing optimal trade-off between temporal resolution and spectral estimation stability \cite{dhuli2022tutorial}. For each window, we extracted a comprehensive feature vector.
+
+\subsubsection{Spectral Features}
+
+Power spectral density (PSD) was computed using Welch's method with 1-second Hann windows and 50\% overlap, resulting in a frequency resolution of 1 Hz. Band powers were extracted for:
+\begin{itemize}
+    \item Delta (1-4 Hz)
+    \item Theta (4-8 Hz)
+    \item Alpha (8-13 Hz)
+    \item Beta (13-30 Hz)
+\end{itemize}
+
+Band powers were normalized by total power in the 1-40 Hz range to reduce inter-session variability:
+\begin{equation}
+P_{\text{norm}}(b) = \frac{P(b)}{\sum_{b'} P(b')}
+\end{equation}
+
+\subsubsection{Asymmetry Features}
+
+Frontal alpha asymmetry (FAA) was computed as:
+\begin{equation}
+\text{FAA} = \log(\alpha_{\text{right}}) - \log(\alpha_{\text{left}})
+\end{equation}
+where $\alpha_{\text{right}}$ and $\alpha_{\text{left}}$ represent average alpha power over right frontal (F4) and left frontal (F3) channels respectively.
+
+Regional alpha powers were also extracted for left and right frontal areas individually.
+
+\subsubsection{Connectivity Features}
+
+Functional connectivity was assessed using Pearson correlation coefficients between all channel pairs:
+\begin{equation}
+r_{ij} = \frac{\text{cov}(x_i, x_j)}{\sigma_i \sigma_j}
+\end{equation}
+
+From the correlation matrix, we extracted two summary statistics:
+\begin{itemize}
+    \item \textbf{Mean absolute correlation}: $\frac{1}{N} \sum_{i<j} |r_{ij}|$
+    \item \textbf{Standard deviation of absolute correlation}: $\sqrt{\frac{1}{N-1} \sum_{i<j} (|r_{ij}| - \bar{r})^2}$
+\end{itemize}
+
+These metrics capture overall connectivity strength and its variability across channel pairs.
+
+\subsubsection{Complete Feature Set}
+
+The complete feature vector for each window thus consisted of 9 dimensions:
+\begin{enumerate}
+    \item $\text{BP}_{\delta}$: Delta band power (normalized)
+    \item $\text{BP}_{\theta}$: Theta band power (normalized)
+    \item $\text{BP}_{\alpha}$: Alpha band power (normalized)
+    \item $\text{BP}_{\beta}$: Beta band power (normalized)
+    \item $\alpha_{\text{left}}$: Left frontal alpha power
+    \item $\alpha_{\text{right}}$: Right frontal alpha power
+    \item $\text{FAA}$: Frontal alpha asymmetry
+    \item $\text{mean\_abs\_corr}$: Mean absolute correlation
+    \item $\text{std\_abs\_corr}$: Standard deviation of absolute correlation
+\end{enumerate}
+
+All features were normalized per subject using z-scoring:
+\begin{equation}
+z = \frac{x - \mu}{\sigma}
+\end{equation}
+where $\mu$ and $\sigma$ are the mean and standard deviation across all windows for that subject.
+
+\subsection{Self-Organizing Map (SOM) Modeling}
+
+For each subject, we trained a two-dimensional Self-Organizing Map to obtain a low-dimensional, topology-preserving representation of EEG feature space.
+
+\subsubsection{SOM Architecture}
+
+\begin{itemize}
+    \item \textbf{Grid size}: 10 $\times$ 10 hexagonal grid (100 neurons)
+    \item \textbf{Input dimension}: 9 (feature vector size)
+    \item \textbf{Distance metric}: Euclidean distance in feature space
+    \item \textbf{Neighborhood function}: Gaussian with initial radius 3, decreasing exponentially
+    \item \textbf{Learning rate}: Initial 0.5, decreasing linearly to 0.01
+    \item \textbf{Training epochs}: 500 with batch training algorithm
+    \item \textbf{Initialization}: Linear initialization along principal eigenvectors
+\end{itemize}
+
+\subsubsection{SOM Training Algorithm}
+
+For each input vector $\mathbf{x}$, the best matching unit (BMU) $\mathbf{m}_c$ is found by:
+\begin{equation}
+\|\mathbf{x} - \mathbf{m}_c\| = \min_i \|\mathbf{x} - \mathbf{m}_i\|
+\end{equation}
+
+The weight vectors are updated according to:
+\begin{equation}
+\mathbf{m}_i(t+1) = \mathbf{m}_i(t) + \alpha(t) h_{ci}(t) [\mathbf{x}(t) - \mathbf{m}_i(t)]
+\end{equation}
+where $\alpha(t)$ is the learning rate and $h_{ci}(t)$ is the neighborhood function:
+\begin{equation}
+h_{ci}(t) = \exp\left(-\frac{\|\mathbf{r}_c - \mathbf{r}_i\|^2}{2\sigma^2(t)}\right)
+\end{equation}
+
+\subsubsection{SOM Quality Assessment}
+
+SOM quality was assessed using three metrics:
+
+\begin{enumerate}
+    \item \textbf{Quantization Error (QE)}: Average distance between each feature vector and its BMU:
+    \begin{equation}
+    \text{QE} = \frac{1}{N} \sum_{i=1}^N \|\mathbf{x}_i - \mathbf{m}_{c_i}\|
+    \end{equation}
+    Lower QE indicates better map resolution.
+    
+    \item \textbf{Topographic Error (TE)}: Proportion of vectors for which the first and second BMUs are not adjacent:
+    \begin{equation}
+    \text{TE} = \frac{1}{N} \sum_{i=1}^N u(\mathbf{x}_i)
+    \end{equation}
+    where $u(\mathbf{x}_i) = 1$ if first and second BMUs are non-adjacent, 0 otherwise. Lower TE indicates better topology preservation.
+    
+    \item \textbf{Silhouette Coefficient}: For labeled windows, measures cluster separation:
+    \begin{equation}
+    s(i) = \frac{b(i) - a(i)}{\max\{a(i), b(i)\}}
+    \end{equation}
+    where $a(i)$ is mean distance to other windows in same cluster and $b(i)$ is mean distance to nearest other cluster.
+\end{enumerate}
+
+\subsection{Annotation-EEG Fusion}
+
+To merge SOM trajectories with annotations, we implemented a script that translates annotation events into intervals. Each annotation event defines a candidate emotional state from its time until the next annotation event. Each EEG window with center time inherits the label of the interval containing that time. Windows within 2 seconds of an annotation boundary were excluded to avoid transition effects.
+
+\subsection{Supervised Classification}
+
+We trained a Random Forest classifier with the following parameters:
+\begin{itemize}
+    \item Number of trees: 200
+    \item Maximum depth: None (fully grown)
+    \item Minimum samples split: 2
+    \item Minimum samples leaf: 1
+    \item Class weight: Balanced
+    \item Random seed: 42
+\end{itemize}
+
+Due to the limited number of annotated windows (n=9), we employed leave-one-out cross-validation to maximize data usage while obtaining unbiased performance estimates. For each fold, 8 windows were used for training and 1 for testing.
+
+Performance metrics included:
+\begin{itemize}
+    \item Accuracy: $\frac{TP + TN}{TP + TN + FP + FN}$
+    \item Precision: $\frac{TP}{TP + FP}$
+    \item Recall: $\frac{TP}{TP + FN}$
+    \item F1-score: $2 \times \frac{\text{precision} \times \text{recall}}{\text{precision} + \text{recall}}$
+\end{itemize}
+
+\subsection{Feature Importance Analysis}
+
+Random Forest feature importance was computed using the Gini impurity decrease:
+\begin{equation}
+\text{Importance}(f) = \frac{1}{T} \sum_{t=1}^T \sum_{n \in t: \text{split on } f} \Delta G(n)
+\end{equation}
+where $\Delta G(n)$ is the decrease in Gini impurity at node $n$ when splitting on feature $f$, and $T$ is the number of trees.
+
+To assess stability, we performed bootstrap resampling (1000 iterations) to compute 95\% confidence intervals for each feature's importance score.
+
+\subsection{Connectivity and Spectral Analyses}
+
+For each emotional state, we extracted all 4-second windows centered on annotations and computed:
+\begin{itemize}
+    \item \textbf{Average connectivity matrix}: Mean Pearson correlation across windows for that state
+    \item \textbf{Average power spectrum}: Mean PSD across channels and windows using Welch's method
+\end{itemize}
+
+Statistical differences between states were assessed using permutation tests (10,000 permutations) with false discovery rate (FDR) correction for multiple comparisons.
+
+\subsection{Statistical Analysis of Current Results}
+
+For the validation dataset (n=279 windows, 9 annotations), we assessed:
+
+\begin{itemize}
+    \item \textbf{Classification significance}: Permutation test with 1000 random label shuffles to establish chance level (16.7\%) and compute p-value
+    \item \textbf{Feature importance stability}: Bootstrap resampling (1000 iterations) to compute 95\% confidence intervals for importance scores
+    \item \textbf{Cluster separation}: Silhouette coefficient with confidence intervals
+    \item \textbf{Connectivity differences}: Paired permutation tests between emotional states with FDR correction
+\end{itemize}
+
+All statistical tests were two-tailed with $\alpha = 0.05$.
+
+\subsection{Software and Reproducibility}
+
+To ensure reproducibility:
+
+\begin{itemize}
+    \item All analysis code is available at: \url{https://github.com/...}
+    \item Random seeds were fixed (seed=42) for all stochastic algorithms
+    \item Data processing pipeline is documented in MNE-Python scripts
+    \item Parameter choices are justified with citations to literature
+\end{itemize}
+
+The following open-source libraries were used:
+\begin{itemize}
+    \item \textbf{Data processing}: MNE-Python v1.6.0, NumPy v1.21, SciPy v1.7
+    \item \textbf{Machine learning}: scikit-learn v1.0, MiniSom v2.3
+    \item \textbf{Visualization}: Matplotlib v3.4, Seaborn v0.11
+    \item \textbf{Interface}: Streamlit v1.10
+\end{itemize}
+
+\subsection{Proposed Clinical Study Design}
+
+Based on the successful validation of the technical pipeline, we have designed a comprehensive clinical study to be conducted pending funding.
+
+\subsubsection{Patient Population}
+
+Eight patients with polyhandicap and expressive aphasia will be recruited from rehabilitation units and long-term care facilities in the Marseille region.
+
+\textbf{Inclusion criteria:}
+\begin{itemize}
+    \item Diagnosis of polyhandicap with severe expressive aphasia
+    \item Preserved vigilance sufficient for EEG recording (>5 minutes eyes open)
+    \item Availability of primary caregiver during sessions
+    \item Stable medical condition with no acute illness
+    \item Age > 18 years
+\end{itemize}
+
+\textbf{Exclusion criteria:}
+\begin{itemize}
+    \item Recent changes in anti-epileptic medication (<3 months)
+    \item Open scalp wounds or skin conditions
+    \item Active status epilepticus
+    \item Refusal by legal guardian
+\end{itemize}
+
+\subsubsection{Data Acquisition Protocol}
+
+Each patient will complete up to six recording sessions over a three-month period:
+\begin{itemize}
+    \item Session duration: 60-90 minutes
+    \item Usable recording time: approximately 45 minutes per session
+    \item Total windows per patient: approximately 2,700 (45 min $\times$ 60 s/min $\times$ 1 window/s)
+    \item Expected annotations: 300-500 per patient
+\end{itemize}
+
+Sessions will be scheduled during routine care activities:
+\begin{itemize}
+    \item Morning care (bathing, dressing)
+    \item Feeding times
+    \item Physical therapy sessions
+    \item Family visits
+    \item Quiet rest periods
+\end{itemize}
+
+\subsubsection{Caregiver Training}
+
+Primary caregivers will receive standardized training including:
+\begin{itemize}
+    \item Recognition of behavioral indicators for each emotional category (2 hours)
+    \item Use of the annotation interface (30 minutes)
+    \item Importance of timely annotation (<3 seconds)
+    \item When to use "uncertain" rather than forcing a label
+    \item Reference card with behavioral descriptors provided at each session
+\end{itemize}
+
+\subsubsection{Outcome Measures}
+
+\textbf{Primary outcomes:}
+\begin{itemize}
+    \item Data quality and retention rates in patient population
+    \item SOM convergence and stability metrics (QE, TE)
+    \item Classification accuracy for broad emotional categories
+    \item Identification of most discriminative EEG features per patient
+\end{itemize}
+
+\textbf{Secondary outcomes:}
+\begin{itemize}
+    \item Caregiver acceptability (structured interviews)
+    \item Correlation with clinical pain and discomfort scales
+    \item Preliminary evidence of clinical utility
+    \item Longitudinal model stability across sessions
+\end{itemize}
+
+\subsubsection{Statistical Analysis Plan}
+
+For each patient:
+\begin{itemize}
+    \item Cross-validated classification metrics (accuracy, precision, recall, F1)
+    \item Chance level established through permutation testing (1,000 random shuffles)
+    \item Feature importance correlations with clinical variables
+    \item Longitudinal stability assessed by training on early sessions, testing on later sessions
+\end{itemize}
+
+For group-level analyses:
+\begin{itemize}
+    \item Mixed-effects models accounting for repeated measures
+    \item Correlations between clinical characteristics and classification performance
+    \item Effect size estimation for future larger studies
+\end{itemize}

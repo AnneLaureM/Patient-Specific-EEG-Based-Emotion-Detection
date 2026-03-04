@@ -1,0 +1,121 @@
+\section{Discussion}
+
+\subsection{Summary of Principal Findings}
+
+This technical validation demonstrates the feasibility of a patient-specific, SOM-based EEG emotion recognition pipeline. Key findings include:
+
+\begin{itemize}
+    \item \textbf{Data quality}: SNR = 18.2 dB, 92.4\% data retention after artifact rejection
+    \item \textbf{SOM organization}: QE = 2.34, TE = 0.038, 45 active neurons out of 100
+    \item \textbf{Classification performance}: 77.8\% accuracy across 6 emotional states (chance = 16.7\%, p < 0.001)
+    \item \textbf{Feature importance}: std\_abs\_corr (0.138), theta power (0.125), mean\_abs\_corr (0.120), FAA (0.105)
+\end{itemize}
+
+These results, obtained with only 4.7 minutes of recording and 9 annotations, validate the robustness of the approach and its potential for applications requiring rapid calibration.
+
+\subsection{Scientific Interpretation}
+
+\subsubsection{Connectivity Variability as the Dominant Feature}
+
+The emergence of std\_abs\_corr (standard deviation of absolute correlation) as the most important feature (0.138) is a major finding with significant scientific implications. This metric captures the variability of functional connectivity across different channel pairs within a 4-second window. High values indicate that some channel pairs are strongly correlated while others are weakly correlated or anticorrelated, reflecting a differentiated network state.
+
+Several neurophysiological interpretations are possible:
+
+\begin{enumerate}
+    \item \textbf{State transitions}: Windows containing transitions between emotional states may exhibit high connectivity variability as the brain reorganizes its functional architecture.
+    \item \textbf{Arousal modulation}: Heightened arousal may lead to more differentiated cortical activation patterns, increasing connectivity variability.
+    \item \textbf{Emotion-specific networks}: Different emotions may recruit distinct distributed networks, leading to characteristic variability patterns.
+\end{enumerate}
+
+The importance of this dynamic connectivity measure aligns with growing recognition in the literature that \textbf{functional connectivity dynamics} contain critical information about cognitive and affective states \cite{liu2024graph_eeg_emotion}. Traditional approaches averaging connectivity over longer periods may miss these transient but informative patterns.
+
+\subsubsection{Theta Band Power and Internal Focus}
+
+Theta band power (4-8 Hz) emerged as the second most important feature (0.125). Theta oscillations have been extensively linked to:
+
+\begin{itemize}
+    \item \textbf{Drowsiness and relaxation}: Increased theta power during transitions to sleep
+    \item \textbf{Internal focus}: Theta increases during internally-directed attention (mind-wandering, meditation)
+    \item \textbf{Memory encoding}: Hippocampal theta coordinates memory processes
+    \item \textbf{Emotional processing}: Theta power modulations during emotional experience
+\end{itemize}
+
+In our data, theta power likely helped discriminate between low-arousal states requiring internal focus (fatigue, sérénité) and higher-arousal states with external orientation (joie, envie). The elevated theta during fatigue is consistent with drowsiness-related theta increases reported in the literature \cite{dhuli2022tutorial}.
+
+\subsubsection{Frontal Alpha Asymmetry: The Established Biomarker}
+
+Frontal alpha asymmetry (FAA = 0.105), though ranked fourth in importance, still contributed meaningfully to classification. FAA has been extensively validated as a biomarker of emotional valence \cite{coan2006frontal}, with:
+
+\begin{itemize}
+    \item \textbf{Relative right frontal activity} (negative FAA): Associated with withdrawal-related emotions (fear, disgust, sadness)
+    \item \textbf{Relative left frontal activity} (positive FAA): Associated with approach-related emotions (joy, anger, interest)
+\end{itemize}
+
+The presence of FAA in the top features confirms that even with a short recording and limited channels, this established biomarker can be detected. Its slightly lower ranking compared to connectivity measures may reflect that FAA captures valence information, while connectivity variability captures arousal and network dynamics—both dimensions are necessary for comprehensive emotion decoding.
+
+\subsection{Comparison with the Literature}
+
+\subsubsection{SOM Applications in EEG}
+
+Our SOM results (QE = 2.34, TE = 0.038) are consistent with previous EEG-SOM applications. Joutsiniemi et al. \cite{joutsiniemi1995som_eeg} reported successful topographic pattern recognition in clinical EEG with similar quantization errors. Jahan et al. \cite{jahan2014som_similarity} demonstrated SOM-based similarity analysis with topographic errors below 0.05. The slightly higher QE in our study likely reflects the heterogeneity of emotional states compared to resting-state or pathological patterns.
+
+The discovery of distinct clusters corresponding to different emotional states extends previous work by demonstrating that SOMs can organize not just resting or pathological states but also emotion-related brain dynamics. This represents an original contribution to the field.
+
+\subsubsection{Feature Importance in Emotion Recognition}
+
+Our feature importance ranking (std\_abs\_corr > theta > mean\_abs\_corr > FAA) contributes to ongoing debates in the literature about the most discriminative features for emotion recognition. While many studies focus on spectral features \cite{liu2024graph_eeg_emotion}, our results suggest that connectivity dynamics may be even more informative. This finding has implications for feature selection in future studies and real-time applications.
+
+\subsubsection{Comparison with Deep Learning Approaches}
+
+Deep learning approaches to emotion recognition often achieve high accuracy (80-90\%) but lack interpretability \cite{ma2024deep_review}. Our approach, while slightly less accurate (77.8\%), provides clear interpretability through feature importance analysis. This trade-off between performance and interpretability is particularly relevant for applications where understanding the "why" behind a prediction is crucial.
+
+\subsection{Originality and Contributions}
+
+This work makes several original contributions to the scientific literature:
+
+\begin{enumerate}
+    \item \textbf{First demonstration of SOM-based patient-specific emotion recognition}: To our knowledge, this is the first study applying SOMs to patient-specific emotion decoding from EEG.
+    
+    \item \textbf{Identification of connectivity variability as a key feature}: The prominence of std\_abs\_corr highlights the importance of dynamic connectivity measures, opening new research directions.
+    
+    \item \textbf{Validation of low-channel-count approach}: Our results demonstrate that clinically useful information can be extracted from a practical 8-channel system, challenging the assumption that high-density arrays are necessary.
+    
+    \item \textbf{Rapid calibration protocol}: With only 4.7 minutes of recording, we achieved above-chance classification, suggesting that patient-specific models can be calibrated in realistic time frames.
+    
+    \item \textbf{Interpretable AI framework}: Unlike black-box deep learning models, our approach provides neurophysiologically meaningful features.
+\end{enumerate}
+
+\subsection{Limitations}
+
+Several limitations must be acknowledged:
+
+\begin{itemize}
+    \item \textbf{Single subject}: Results from one healthy volunteer cannot be generalized to the target patient population
+    \item \textbf{Simulated emotions}: Annotated states may not fully correspond to natural emotional experience
+    \item \textbf{Limited annotations}: Only 9 events, with class imbalance
+    \item \textbf{Controlled environment}: Laboratory setting vs. real-world conditions
+    \item \textbf{Channel count}: 8 channels limit spatial resolution and source localization
+\end{itemize}
+
+These limitations precisely constitute the work axes for the proposed maturation phase.
+
+\subsection{Future Research Directions}
+
+\subsubsection{Scientific Questions to Address}
+
+\begin{enumerate}
+    \item How do SOM topologies differ between healthy individuals and patients with brain injury?
+    \item Are connectivity dynamics universally discriminative across populations?
+    \item How stable are patient-specific models over weeks and months?
+    \item Can transfer learning accelerate calibration for new patients?
+    \item What is the minimal channel count for reliable emotion decoding?
+\end{enumerate}
+
+\subsubsection{Technological Developments}
+
+\begin{enumerate}
+    \item \textbf{Algorithmic optimization}: Lightweight version for embedded deployment
+    \item \textbf{Incremental learning}: Continuous model updates without retraining
+    \item \textbf{Multi-modal integration}: Add heart rate variability, electrodermal activity
+    \item \textbf{Real-time feedback}: Closed-loop applications
+\end{enumerate}

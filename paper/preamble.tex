@@ -1,0 +1,40 @@
+% Preamble and packages
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{hyperref}
+\usepackage[english]{babel}  % Supprimé 'russian'
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{multirow}
+\usepackage{colortbl}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% Figure path
+\graphicspath{{figures/}}
+
+% Custom colors
+\definecolor{bitbrainblue}{RGB}{0, 102, 204}
+\definecolor{emotionjoy}{RGB}{255, 200, 87}
+\definecolor{emotionfear}{RGB}{200, 100, 100}
+\definecolor{emotionpain}{RGB}{150, 50, 50}
+
+% Custom commands
+\newcommand{\subject}[1]{\textsc{#1}}
+\newcommand{\tool}[1]{\texttt{#1}}
+\newcommand{\dataset}[1]{\textit{#1}}
+
+% Header/footer - CORRECTION DU WARNING headheight
+\usepackage{fancyhdr}
+\setlength{\headheight}{14.5pt}  % Ajouté pour corriger le warning
+\pagestyle{fancy}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\thepage}

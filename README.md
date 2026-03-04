@@ -1,4 +1,4 @@
-# README.md - Version corrigée avec la section Architecture du projet
+# README.md
 
 ```markdown
 # 🧠 Patient-Specific EEG-Based Emotion Detection

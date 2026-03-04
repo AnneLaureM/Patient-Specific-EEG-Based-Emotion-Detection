@@ -1,4 +1,4 @@
-# README.md - Projet de Détection d'Émotions par EEG Patient-Spécifique
+# README.md - Version corrigée avec la section Architecture du projet
 
 ```markdown
 # 🧠 Patient-Specific EEG-Based Emotion Detection
@@ -7,7 +7,7 @@
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)](https://streamlit.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ---
 
@@ -59,54 +59,54 @@ Ce projet vise à **restaurer une capacité de communication** pour des personne
 ```
 Patient-Specific-EEG-Based-Emotion-Detection/
 │
-├── 📁 **Scripts Principaux**
-│   ├── 01_acquisition.py        # Acquisition EEG temps réel
-│   ├── 02_tagging_app.py         # Interface d'annotation (Streamlit)
-│   ├── 03_som_pipeline.py         # Extraction features + SOM
-│   ├── 04_build_labels.py          # Construction des labels
-│   ├── 05_train_model.py            # Entraînement modèle patient-spécifique
-│   ├── 06_analyze_results.py         # Génération figures papier
-│   ├── 07_advanced_analysis.py        # Analyses avancées (connectivité, spectral)
-│   ├── 08_inference_app.py             # App d'inférence stable pour patients
-│   └── 09_simple_inference.py           # Version simplifiée pour tests
+├── 📁 Scripts Principaux
+│   ├── 01_acquisition.py          # Acquisition EEG temps réel
+│   ├── 02_tagging_app.py           # Interface d'annotation (Streamlit)
+│   ├── 03_som_pipeline.py           # Extraction features + SOM
+│   ├── 04_build_labels.py            # Construction des labels
+│   ├── 05_train_model.py              # Entraînement modèle patient-spécifique
+│   ├── 06_analyze_results.py           # Génération figures papier
+│   ├── 07_advanced_analysis.py          # Analyses avancées (connectivité, spectral)
+│   ├── 08_inference_app.py               # App d'inférence stable pour patients
+│   └── 09_simple_inference.py             # Version simplifiée pour tests
 │
-├── 📁 **Utilitaires**
-│   ├── config.py                   # Configuration centralisée
-│   ├── eeg_utils.py                 # Traitement du signal EEG
-│   ├── file_utils.py                  # Gestion fichiers et compatibilité
-│   └── run_pipeline.py                  # Pipeline automatisé
+├── 📁 Utilitaires
+│   ├── config.py                       # Configuration centralisée
+│   ├── eeg_utils.py                     # Traitement du signal EEG
+│   ├── file_utils.py                      # Gestion fichiers et compatibilité
+│   └── run_pipeline.py                      # Pipeline automatisé
 │
-├── 📁 **SDK Bitbrain**
-│   └── bbt-sdk_2.8.6-ubuntu-22.04/     # SDK du casque EEG Air
+├── 📁 SDK Bitbrain
+│   └── bbt-sdk_2.8.6-ubuntu-22.04/        # SDK du casque EEG Air
 │
-├── 📁 **Données**
+├── 📁 Données
 │   └── data/
-│       ├── .current_session.json        # Session courante
+│       ├── .current_session.json           # Session courante
 │       └── patients/
-│           ├── patient_Anne/            # Dossier patient Anne
-│           │   ├── eeg_*.csv            # Sessions EEG
-│           │   └── annotations.csv       # Annotations associées
-│           └── patient_Anne-prod/        # Second patient
+│           ├── patient_Anne/               # Dossier patient Anne
+│           │   ├── eeg_*.csv                # Sessions EEG
+│           │   └── annotations.csv           # Annotations associées
+│           └── patient_Anne-prod/           # Second patient
 │
-├── 📁 **Sorties & Modèles**
-│   ├── outputs/                         # Résultats d'analyse
-│   │   ├── patient_Anne/                 # Par patient
+├── 📁 Sorties & Modèles
+│   ├── outputs/                            # Résultats d'analyse
+│   │   ├── patient_Anne/                    # Par patient
 │   │   │   ├── som_features.csv
 │   │   │   ├── som_clusters.csv
 │   │   │   ├── som_clusters_annotated.csv
 │   │   │   └── advanced_stats_*.txt
 │   │   └── patient_Anne-prod/
 │   │
-│   ├── models/                           # Modèles entraînés
+│   ├── models/                              # Modèles entraînés
 │   │   ├── patient_Anne/
 │   │   │   ├── patient_model_rf.joblib
 │   │   │   ├── feature_scaler.joblib
 │   │   │   └── model_metrics.txt
 │   │   └── patient_Anne-prod/
 │   │
-│   └── figures/                           # Visualisations
-│       ├── figure1_pipeline.png            # Figure générale
-│       ├── patient_Anne/                    # Figures par patient
+│   └── figures/                             # Visualisations
+│       ├── figure1_pipeline.png              # Figure générale
+│       ├── patient_Anne/                      # Figures par patient
 │       │   ├── figure2_som_Anne.png
 │       │   ├── figure3_confusion_Anne.png
 │       │   ├── figure4_features_Anne.png
@@ -115,21 +115,21 @@ Patient-Specific-EEG-Based-Emotion-Detection/
 │       │   └── figure7_spectral_Anne.png
 │       └── patient_Anne-prod/
 │
-├── 📁 **Publication**
-│   └── paper/                            # Sources LaTeX pour article
+├── 📁 Publication
+│   └── paper/                               # Sources LaTeX pour article
 │       ├── main.tex
 │       ├── sections/
-│       ├── figures/                       # Figures pour l'article
+│       ├── figures/                          # Figures pour l'article
 │       └── bibliography/
 │
-├── 📁 **Scripts Auxiliaires**
-│   ├── copy_figures_to_paper.py           # Copie figures vers dossier paper
-│   ├── migrate_all.py                      # Migration anciennes données
-│   ├── run_inference.sh                     # Lancement app inférence
-│   └── setup.sh                              # Installation automatique
+├── 📁 Scripts Auxiliaires
+│   ├── copy_figures_to_paper.py             # Copie figures vers dossier paper
+│   ├── migrate_all.py                        # Migration anciennes données
+│   ├── run_inference.sh                       # Lancement app inférence
+│   └── setup.sh                                # Installation automatique
 │
-├── requirements.txt                        # Dépendances Python
-└── README.md                               # Cette documentation
+├── requirements.txt                          # Dépendances Python
+└── README.md                                  # Cette documentation
 ```
 
 ---
@@ -331,35 +331,26 @@ Le dossier `paper/` contient les sources LaTeX pour l'article scientifique :
 ```
 paper/
 ├── main.tex                          # Document principal
-├── preamble.tex                       # Packages et configuration
-├── Makefile                            # Compilation automatique
-├── compile_final.sh                     # Script de compilation
-│
-├── sections/                            # Chapitres
+├── sections/                          # Chapitres
 │   ├── 00_abstract.tex
 │   ├── 01_introduction.tex
 │   ├── 02_methods.tex
 │   ├── 03_results.tex
 │   ├── 04_discussion.tex
-│   ├── 05_conclusion.tex
-│   └── 06_acknowledgments.tex
-│
-├── figures/                             # Figures pour l'article
-│   ├── figure1_pipeline.png
-│   ├── figure2_som_P001.png
-│   ├── figure3_confusion_P001.png
-│   └── ...
-│
-└── bibliography/                        # Références
+│   └── 05_conclusion.tex
+├── figures/                           # Figures pour l'article
+└── bibliography/                      # Références
     └── references.bib
 ```
 
 ### Compilation du Papier
 ```bash
 cd paper
-make           # ou ./compile_final.sh
+pdflatex main.tex
+bibtex main
+pdflatex main.tex
+pdflatex main.tex
 ```
-Le PDF sera généré dans `paper/build/main.pdf`
 
 ### Métriques Clés
 Le script `06_analyze_results.py` génère automatiquement :
@@ -448,31 +439,20 @@ Ce projet est sous licence **GNU General Public License v3.0** - voir le fichier
   license = {GPL-3.0},
   url = {https://github.com/AnneLaureM/Patient-Specific-EEG-Based-Emotion-Detection}
 }
+```
 
 ### Contact
 **Anne-Laure Mealier**
 - 📧 Email: anne-laure.mealier@centrale-med.fr
 - 💻 GitHub: [AnneLaureM](https://github.com/AnneLaureM)
 
-### Citation
-Si vous utilisez ce projet dans vos recherches :
-
-```bibtex
-@software{mealier2025eeg,
-  author = {Mealier, Anne-Laure},
-  title = {Patient-Specific EEG-Based Emotion Detection},
-  year = {2025},
-  url = {https://github.com/AnneLaureM/Patient-Specific-EEG-Based-Emotion-Detection}
-}
-```
-
 ---
 
 ## 🙏 Remerciements
 
-- **Bitbrain** pour le SDK et le support technique
-- **Centrale Méditerranée** pour le financement
-- Les **patients et soignants** pour leur participation
+- **Bitbrain** pour le SDK
+- **Centrale Méditerranée** & **Institut Fresnel**
+- Les **utilisateurs** pour leur participation
 
 ---
 
